@@ -11,7 +11,7 @@ Amphibians project repository
 #### **Function list**
 
 -   Absence calculation:
--   \[X\] Distance calculation
--   \[ \] Other methods (fill in the list)
+    -   \[X\] Distance calculation
+    -   \[ \] Other methods (fill in the list)
 -   \[ \] Buffer\_bioclim - *Calculates processing resolution for amphibian species to which fit the models.*
 -   \[ \] Refactor so there aren't so many heavy dependencies
