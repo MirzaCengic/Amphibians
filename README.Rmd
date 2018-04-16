@@ -1,5 +1,5 @@
 ---
-output: rmarkdown::github_document
+output: rmarkdown::github_document   
 ---
 
 <!-- README.md is generated from README.Rmd. Please edit that file -->
@@ -9,11 +9,20 @@ output: rmarkdown::github_document
 
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, fig.path = "README_figures/", dev = "png")
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
 ```
 
 # Amphibians project repository
 
-## **Function list**
-  - Buffer_bioclim - *Calculates processing resolution for amphibian species to which fit the models.*
-- [X] Refactor so there aren't so many heavy dependencies
+*Update 16th of April 2018:*  
+- The repository is slowly being cleaned and made reproducibly, functions and scripts in the 
+list below will slowly be added to the list...  
+
+#### **Function list**
+
+- Absence calculation:  
+  - [X] Distance calculation  
+  - [ ] Other methods (fill in the list)  
+- [ ] Buffer_bioclim - *Calculates processing resolution for amphibian species to which fit the models.*
+- [ ] Refactor so there aren't so many heavy dependencies
+
