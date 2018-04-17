@@ -17,7 +17,7 @@
 #' @return Raster
 #' @export
 #'
-#' @examples None
+#' @examples None.
 #' @importFrom raster raster writeRaster mask getValues setValues
 #' @importFrom Rahat milkunize
 #' @importFrom fasterize fasterize
@@ -111,7 +111,7 @@ get_distance_surface <- function(species_range, raster_mask, output_name)
 #' @return Depends on \code{return} argument.
 #' @export
 #'
-#' @examples
+#' @examples None.
 #' @importFrom fasterize fasterize
 #' @importFrom raster rasterToPoints
 #' @importFrom sp SpatialPointsDataFrame
