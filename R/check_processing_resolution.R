@@ -1,94 +1,102 @@
-#' Check processing resolution of species.
+##%######################################################%##
+#                                                          #
+####             Check processing resolution              ####
+#                                                          #
+##%######################################################%##
+
+
+# This script contains helper functions that assist with obtaining the proper
+# processing resolution for model fitting of amphibian species
+
+# It contains the following function:
+# - get_cell_number()
+# - get_processing_resolution()
+
+#########################################
+
+#' Get cell number
+#' Function takes in species range and a raster with
+#' specified resolution, and returns the number of cells
+#' that exist within the species range
 #'
-#' Checks with which processing resolution the species has 30 or more points.
+#' @param input_species sp class species spatial data.
+#' @param resolution Resolution to check. One in c("10m", "5m", "2.5m", "30s").
 #'
-#' @param input_species Species range of the species for which the processing resolution is calculated. Class sf.
-#' @param raster_folder Folder that contains bioclim data. eg milkunize("Data_RAW/WorldClim/bioclim")
-#' @param output_dir Directory in which to store the results. eg. milkunize("Projects/Amphibians/R/Output/Modeling_resolution/")
+#' @return Integer
+#' @export
 #'
-#' @return A string with the processing resolution
+#' @examples None
+#'
+get_cell_number <- function(input_species, resolution, dir_path = "WorldClim-1.4/current")
+{
+
+  cells_no <- dir_path %>%
+    milkunize2("data") %>%
+    list.files(pattern = paste0("_", resolution, ".*.tif$"),
+               recursive = TRUE, full.names = TRUE) %>%
+    head(1) %>%
+    raster() %>%
+    raster::extract(input_species, df = TRUE) %>%
+    nrow()
+  return(cells_no)
+}
+
+
+
+#' Get processing resolution for species data
+#'
+#' This function will test the get_cell_number function against rasters of 4 different
+#' spatial resolutions. Checks with which processing resolution the species has 30 or more points.
+#'
+#' @param species Species range of the species for which the processing resolution is calculated. Class sp.
+#'
+#' @return String.
 #' @export
 #'
 #' @examples None.
-#' @importFrom fasterize fasterize
-#' @importFrom raster rasterToPoints raster
-#' @importFrom fs dir_create
-check_processing_resolution <- function(input_species, raster_folder, output_dir)
+get_processing_resolution <- function(species)
 {
-
-  stopifnot(exists(output_dir))
-
-proc_resolution <- "10m"
-
-raster_files <- list.files(raster_folder,
-                           pattern = paste0(proc_resolution, ".*.tif"), full.names = TRUE, recursive = TRUE)
-raster_mask <- raster::raster(raster_files[1])
-
-species_range <- fasterize::fasterize(input_species, raster_mask)
-species_range_points <- raster::rasterToPoints(species_range)
-
-if (nrow(species_range_points) <= 30) {
-    cat(paste0("Less than 30 points for resolution ", proc_resolution), "\n")
-
-	proc_resolution <- "5m"
-
-	raster_files <- list.files(raster_folder,
-                           pattern = paste0(proc_resolution, ".*.tif"), full.names = TRUE, recursive = TRUE)
-    raster_mask <- raster::raster(raster_files[1])
-
-
-	species_range <- fasterize::fasterize(input_species, raster_mask)
-    species_range_points <- raster::rasterToPoints(species_range)
-	}
-
-if (nrow(species_range_points) <= 30) {
-    cat(paste0("Less than 30 points for resolution ", proc_resolution), "\n")
-
-	proc_resolution <- "2.5m"
-
-	raster_files <- list.files(raster_folder,
-                           pattern = paste0(proc_resolution, ".*.tif"), full.names = TRUE, recursive = TRUE)
-    raster_mask <- raster::raster(raster_files[1])
-
-
-	species_range <- fasterize::fasterize(input_species, raster_mask)
-    species_range_points <- raster::rasterToPoints(species_range)
-	}
-
-if (nrow(species_range_points) <= 30) {
-    cat(paste0("Less than 30 points for resolution ", proc_resolution), "\n")
-
-	proc_resolution <- "30s"
-
-	raster_files <- list.files(raster_folder,
-                           pattern = paste0(proc_resolution, ".*.tif"), full.names = TRUE, recursive = TRUE)
-    raster_mask <- raster::raster(raster_files[1])
-
-
-	species_range <- fasterize::fasterize(input_species, raster_mask)
-    species_range_points <- raster::rasterToPoints(species_range)
-	}
-
-if (nrow(species_range_points) <= 30)
-{
-cat(paste0("Less than 30 points for resolution ", proc_resolution), "\n")
-proc_resolution <- "Insufficient"
-}
-
-
-outdir <- paste0(output_dir, proc_resolution)
-
-fs::dir_create(outdir)
-
-
-outfile <- paste0(outdir, "/", unique(input_species$binomial))
-
-if (!dir.exists(outfile))
-{
-file.create(outfile)
-  message("Output file created")
-}
-
-
-return(proc_resolution)
+  my_res <- get_cell_number(species, resolution = "10m")
+  if (my_res > 30)
+  {
+    processing_resolution <- "10m"
+    print("10 minutes resolution")
+    return(processing_resolution)
+    # break()
+  } else {
+    # 5 minute resolution
+    my_res <- get_cell_number(species, resolution = "5m")
+    # print("Downscaling to 5m")
+  }
+  if (my_res > 30)
+  {
+    processing_resolution <- "5m"
+    print("5 minutes resolution")
+    return(processing_resolution)
+    break()
+  } else {
+    # 2.5 minute resolution
+    my_res <- get_cell_number(species, resolution = "2.5m")
+    # print("Downscaling to 2.5m")
+  }
+  if (my_res > 30)
+  {
+    processing_resolution <- "2.5m"
+    print("2.5 minutes resolution")
+    return(processing_resolution)
+    break()
+  } else {
+    # 30 seconds resolution
+    my_res <- get_cell_number(species, resolution = "30s")
+    # print("Downscaling to 30s")
+  }
+  if (my_res > 30)
+  {
+    processing_resolution <- "30s"
+    print("30 second resolution")
+  } else {
+    processing_resolution <- "00"
+    print("Can't be done")
+  }
+  return(processing_resolution)
 }
