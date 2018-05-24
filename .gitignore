@@ -1,0 +1,14 @@
+.Rproj.user
+.Rhistory
+.RData
+/data/*
+/data_raw/*
+/Documents/*
+*.rds
+README.nb.html
+/rstuff/*
+/Output/*
+/manuscript/*
+/man/*
+/Documents/*
+/tests/*
