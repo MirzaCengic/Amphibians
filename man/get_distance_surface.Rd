@@ -4,7 +4,8 @@
 \alias{get_distance_surface}
 \title{Calculate distance surface}
 \usage{
-get_distance_surface(species_range, output_name, processing_resolution_data)
+get_distance_surface(species_range, output_name, processing_resolution_data,
+  keep = FALSE)
 }
 \arguments{
 \item{species_range}{Species range. Should be class \code{sf}.}

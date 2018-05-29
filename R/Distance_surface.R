@@ -25,7 +25,7 @@
 #'  read_csv()
 #'
 #'
-#' @importFrom raster raster writeRaster mask getValues setValues
+#' @importFrom raster raster writeRaster mask getValues setValues unique
 #' @importFrom Rahat milkunize2
 #' @importFrom fasterize fasterize
 #' @importFrom fs file_temp path_ext_set file_delete
@@ -73,7 +73,7 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
   #### the same continent and realm that the species occupies.
   # Mask out continent
   species_continent_mask <- raster::mask(continent_raster, temp_file_raster) #select continent code overlaping with range
-  mask_continent <- unique(species_continent_mask)
+  mask_continent <- raster::unique(species_continent_mask)
   #codes of continents for species range
   # print("Calculating continents")
   continent_raster2 <- Which(continent_raster %in% mask_continent)
