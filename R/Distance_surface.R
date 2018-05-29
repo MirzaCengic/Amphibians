@@ -33,14 +33,6 @@
 #'
 get_distance_surface <- function(species_range, output_name, processing_resolution_data, keep = FALSE)
 {
-  if (!keep)
-  {
-    if (file.exists(output_name))
-    {
-      file.remove(output_name)
-      file.remove(fs::path_ext_set(output_name, "sdat"))
-    }
-  }
   proc_resolution <- processing_resolution_data %>%
     dplyr::filter(species_name == species_range$binomial) %>%
     dplyr::select(proc_resolution) %>%
@@ -57,30 +49,24 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
   raster_mask <- load_mask("Climate", resolution = proc_resolution)
 
   ## Load realm and continent rasters
-  # if (!file.exists(output_name))
-  # {
-    file.remove(output_name)
-    file.remove(fs::path_ext_set(output_name, "sdat"))
 
-    species_range_raster <- fasterize::fasterize(species_range, raster_mask)
+  species_range_raster <- fasterize::fasterize(species_range, raster_mask)
 
-    # Create temp file
-    temp_file <- paste0(fs::file_temp(), ".tif")
-    # Add check for file extension (oath_ext())
-    saga_output_name <- fs::path_ext_set(output_name, "sdat")
+  # Create temp file
+  temp_file <- paste0(fs::file_temp(), ".tif")
+  # Add check for file extension (oath_ext())
+  saga_output_name <- fs::path_ext_set(output_name, "sdat")
 
-    raster::writeRaster(species_range_raster, temp_file, options = "COMPRESS=LZW")
-    temp_file_raster <- raster::raster(temp_file)
+  raster::writeRaster(species_range_raster, temp_file, options = "COMPRESS=LZW")
+  temp_file_raster <- raster::raster(temp_file)
 
-    saga_call <- paste0("saga_cmd grid_tools 26 -FEATURES:", "\'",
-                        temp_file,"\'", " ", "-DISTANCE:",
-                        "\'", fs::path_ext_set(saga_output_name, "sgrd"), "\'")
-    system(saga_call)
-    gdal_call <- paste0("gdal_translate", " ", saga_output_name,
-                        " ", output_name, " ", "-co COMPRESS=LZW")
-    system(gdal_call)
-
-  # }
+  saga_call <- paste0("saga_cmd grid_tools 26 -FEATURES:", "\'",
+                      temp_file,"\'", " ", "-DISTANCE:",
+                      "\'", fs::path_ext_set(saga_output_name, "sgrd"), "\'")
+  system(saga_call)
+  gdal_call <- paste0("gdal_translate", " ", saga_output_name,
+                      " ", output_name, " ", "-co COMPRESS=LZW")
+  system(gdal_call)
 
   dist_raster <- raster::raster(output_name)
   #### Mask out continent and realm - Absence points are created within
@@ -111,9 +97,14 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
   PA_ras <- raster::mask(dist_raster, realmcont)
 
   #### Clean up residuals
-  fs::file_delete(temp_file)
-  return(PA_ras)
+  unlink(temp_file)
+  unlink(fs::path_ext_set(output_name, "mgrd"))
+  unlink(fs::path_ext_set(output_name, "prj"))
+  unlink(fs::path_ext_set(output_name, "sdat"))
+  unlink(fs::path_ext_set(output_name, "sdat.aux.xml"))
+  unlink(fs::path_ext_set(output_name, "sgrd"))
 
+  return(PA_ras)
 }
 
 #####
