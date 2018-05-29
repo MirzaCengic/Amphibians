@@ -33,23 +33,25 @@
 #'
 get_distance_surface <- function(species_range, output_name, processing_resolution_data)
 {
+  proc_resolution <- processing_resolution_data %>%
+    dplyr::filter(species_name == species_range$binomial) %>%
+    dplyr::select(proc_resolution) %>%
+    dplyr::pull()
+
+  ## Load realm and continents raster, to constrain creation to the realms and continents
+  ## in which the species is found
+  # Realm raster
+  realm_raster <- load_mask("Realm", resolution = proc_resolution)
+
+  # Continents raster
+  continent_raster <- load_mask("Continent", resolution = proc_resolution)
+  # Climate raster (raster mask)
+  raster_mask <- load_mask("Climate", resolution = proc_resolution)
+
   ## Load realm and continent rasters
   if (!file.exists(output_name))
   {
-    proc_resolution <- processing_resolution_data %>%
-      dplyr::filter(species_name == species_range$binomial) %>%
-      dplyr::select(proc_resolution) %>%
-      dplyr::pull()
 
-    ## Load realm and continents raster, to constrain creation to the realms and continents
-    ## in which the species is found
-    # Realm raster
-    realm_raster <- load_mask("Realm", resolution = proc_resolution)
-
-    # Continents raster
-    continent_raster <- load_mask("Continent", resolution = proc_resolution)
-    # Climate raster (raster mask)
-    raster_mask <- load_mask("Climate", resolution = proc_resolution)
 
     species_range_raster <- fasterize::fasterize(species_range, raster_mask)
 
