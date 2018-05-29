@@ -39,7 +39,7 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
     proc_resolution <- processing_resolution_data %>%
       dplyr::filter(species_name == species_range$binomial) %>%
       dplyr::select(proc_resolution) %>%
-      dpylr::pull()
+      dplyr::pull()
 
     ## Load realm and continents raster, to constrain creation to the realms and continents
     ## in which the species is found
