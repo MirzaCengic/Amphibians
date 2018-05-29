@@ -25,7 +25,7 @@
 #'  read_csv()
 #'
 #'
-#' @importFrom raster raster writeRaster mask getValues setValues unique
+#' @importFrom raster raster writeRaster mask getValues setValues unique Which
 #' @importFrom Rahat milkunize2
 #' @importFrom fasterize fasterize
 #' @importFrom fs file_temp path_ext_set file_delete
@@ -76,7 +76,7 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
   mask_continent <- raster::unique(species_continent_mask)
   #codes of continents for species range
   # print("Calculating continents")
-  continent_raster2 <- Which(continent_raster %in% mask_continent)
+  continent_raster2 <- raster::Which(continent_raster %in% mask_continent)
   conti_vals <- raster::getValues(continent_raster2)
   conti_vals[conti_vals == 0] <- NA
   continent_raster2 <- raster::setValues(continent_raster2, conti_vals)
@@ -84,7 +84,7 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
   # print("Calculating realms")
   mask2 <- raster::mask(realm_raster, temp_file_raster) #select realm code overlaping with range
   mask2_v <- raster::unique(mask2)
-  realm2 <- Which(realm_raster %in% mask2_v)
+  realm2 <- raster::Which(realm_raster %in% mask2_v)
 
   realm2_vals <- raster::getValues(realm2)
   realm2_vals[realm2_vals == 0] <- NA
