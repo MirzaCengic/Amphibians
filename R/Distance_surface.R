@@ -38,6 +38,8 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
     dplyr::select(proc_resolution) %>%
     dplyr::pull()
 
+  "%notin%" <- Negate("%in%")
+
   ## Load realm and continents raster, to constrain creation to the realms and continents
   ## in which the species is found
   # Realm raster
@@ -73,24 +75,33 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
   #### the same continent and realm that the species occupies.
   # Mask out continent
   species_continent_mask <- raster::mask(continent_raster, temp_file_raster) #select continent code overlaping with range
-  mask_continent <- raster::unique(species_continent_mask)
+  species_continents <- raster::unique(species_continent_mask)
   #codes of continents for species range
   # print("Calculating continents")
-  continent_raster2 <- raster::Which(continent_raster %in% mask_continent)
-  conti_vals <- raster::getValues(continent_raster2)
-  conti_vals[conti_vals == 0] <- NA
-  continent_raster2 <- raster::setValues(continent_raster2, conti_vals)
+
+  conti_vals <- raster::getValues(continent_raster)
+
+  conti_vals[conti_vals %notin% species_continents] <- NA
+  conti_vals[conti_vals %in% species_continents] <- 1
+
+  continent_raster2 <- raster::setValues(continent_raster, conti_vals)
+
   # #extract raster for pseudo-absences (realm in which the species is present)
   # print("Calculating realms")
-  mask2 <- raster::mask(realm_raster, temp_file_raster) #select realm code overlaping with range
-  mask2_v <- raster::unique(mask2)
-  realm2 <- raster::Which(realm_raster %in% mask2_v)
+  species_realms_mask <- raster::mask(realm_raster, temp_file_raster) #select realm code overlaping with range
+  species_realms <- raster::unique(mask2)
 
-  realm2_vals <- raster::getValues(realm2)
-  realm2_vals[realm2_vals == 0] <- NA
-  realm2 <- raster::setValues(realm2, realm2_vals)
+
+  realm_vals <- raster::getValues(realm_raster)
+
+  realm_vals[realm_vals %notin% species_realms] <- NA
+  realm_vals[realm_vals %in% species_realms] <- 1
+
+  realm_raster2 <- raster::setValues(realm_raster, realm_vals)
+
+
   # #combination realm-continent where species is present
-  realmcont <- raster::mask(realm2, continent_raster2)
+  realmcont <- raster::mask(realm_raster2, continent_raster2)
   realmcont[realmcont == 1] <- 0
   # Resample for testing
   # print("Calculating PAs")
