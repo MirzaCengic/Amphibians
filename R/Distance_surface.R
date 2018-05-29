@@ -22,35 +22,43 @@
 #' @importFrom Rahat milkunize
 #' @importFrom fasterize fasterize
 #' @importFrom fs file_temp path_ext_set file_delete
-get_distance_surface <- function(species_range, raster_mask, output_name)
+get_distance_surface <- function(species_range, raster_mask, output_name, processing_resolution_data)
 {
   ## Load realm and continent rasters
-  # TODO - Add resolution check for species
-
   if (!file.exists(output_name))
   {
-      realm_raster <- raster::raster(paste0(Rahat::milkunize("Amphibians_project_folder/Data/Raster/Realm_", "m5"),
-                                "10m", ".tif"))
+    proc_resolution <- processing_resolution_data %>%
+      filter(species_name == species_range$binomial) %>%
+      dplyr::select(proc_resolution) %>%
+      pull()
 
-  # Continents rasters
-  continent_raster <- raster::raster(paste0(Rahat::milkunize("Amphibians_project_folder/Data/Raster/Continent_", "m5"),
-                                    "10m", ".tif"))
+    ## Load realm and continents raster, to constrain creation to the realms and continents
+    ## in which the species is found
+    # Realm raster
+    realm_raster <- load_mask("Realm", resolution = proc_resolution)
 
-  species_range_raster <- fasterize::fasterize(species_range, raster_mask)
-  temp_file <- paste0(fs::file_temp(), ".tif")
-  # Add check for file extension (oath_ext())
-  saga_output_name <- fs::path_ext_set(output_name, "sdat")
+    # Continents raster
+    continent_raster <- load_mask("Continent", resolution = proc_resolution)
+    # Climate raster (raster mask)
+    raster_mask <- load_mask("Climate", resolution = proc_resolution)
 
-  raster::writeRaster(species_range_raster, temp_file, options = "COMPRESS=LZW")
-  temp_file_raster <- raster::raster(temp_file)
+    species_range_raster <- fasterize::fasterize(species_range, raster_mask)
 
-  saga_call <- paste0("saga_cmd grid_tools 26 -FEATURES:", "\'",
-                      temp_file,"\'", " ", "-DISTANCE:",
-                      "\'", fs::path_ext_set(saga_output_name, "sgrd"), "\'")
-  system(saga_call)
-  gdal_call <- paste0("gdal_translate", " ", saga_output_name,
-                      " ", output_name, " ", "-co COMPRESS=LZW")
-  system(gdal_call)
+    # Create temp file
+    temp_file <- paste0(fs::file_temp(), ".tif")
+    # Add check for file extension (oath_ext())
+    saga_output_name <- fs::path_ext_set(output_name, "sdat")
+
+    raster::writeRaster(species_range_raster, temp_file, options = "COMPRESS=LZW")
+    temp_file_raster <- raster::raster(temp_file)
+
+    saga_call <- paste0("saga_cmd grid_tools 26 -FEATURES:", "\'",
+                        temp_file,"\'", " ", "-DISTANCE:",
+                        "\'", fs::path_ext_set(saga_output_name, "sgrd"), "\'")
+    system(saga_call)
+    gdal_call <- paste0("gdal_translate", " ", saga_output_name,
+                        " ", output_name, " ", "-co COMPRESS=LZW")
+    system(gdal_call)
 
   }
 
@@ -81,8 +89,6 @@ get_distance_surface <- function(species_range, raster_mask, output_name)
   # Resample for testing
   # print("Calculating PAs")
   PA_ras <- raster::mask(dist_raster, realmcont)
-
-
 
   #### Clean up residuals
   fs::file_delete(temp_file)
@@ -118,7 +124,7 @@ get_distance_surface <- function(species_range, raster_mask, output_name)
 #' @importFrom sf st_as_sf
 
 
-create_absence_points <- function(species_distance_surface, species_range, return = "df",
+create_absence_points <- function(species_range, species_distance_surface, return = "df",
                                   # raster_mask,
                                   points_number = 10000)
 {
@@ -133,12 +139,14 @@ dist_raster_rev <- (1 / (species_distance_surface + 1))
 species_distance_decay <- species_range_raster * dist_raster_rev
 
 
-raster_points <- raster::rasterToPoints(species_distance_decay, spatial = F, fun=function(x){x>0}) #(Potential) PseudoAbsences are created here
+raster_points <- raster::rasterToPoints(species_distance_decay, spatial = FALSE, fun = function(x) {x > 0}) #(Potential) PseudoAbsences are created here
 
 #Now to sample for Pseuooabsences Presence Data
 species_absences <- raster_points[sample(seq(1:nrow(raster_points)), size = points_number,
                            replace = TRUE, prob = raster_points[, 3]), 1:2]
-species_absences_pts <- sp::SpatialPointsDataFrame(species_absences, proj4string = raster::crs(species_distance_surface), data = as.data.frame(rep(0, points_number)))
+
+species_absences_pts <- sp::SpatialPointsDataFrame(species_absences, proj4string = raster::crs(species_distance_surface),
+                                                   data = as.data.frame(rep(0, points_number)))
 
 species_absences_coords <- as.data.frame(species_absences_pts@coords)
 species_absences_coords$PA <- rep(0, nrow(species_absences_coords))
