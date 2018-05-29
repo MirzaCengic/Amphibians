@@ -29,7 +29,7 @@
 #' @importFrom Rahat milkunize2
 #' @importFrom fasterize fasterize
 #' @importFrom fs file_temp path_ext_set file_delete
-#' @importFrom dpylr filter select pull
+#' @importFrom dplyr filter select pull
 #'
 get_distance_surface <- function(species_range, output_name, processing_resolution_data)
 {
@@ -196,9 +196,8 @@ load_mask <- function(type, resolution, path = "Projects/Amphibians/data_raw/Ras
   if (type == "Climate")
   {
     r <- "WorldClim-1.4/current/" %>%
-      # 10m/wc2.0_bio_10m_01.tif" %>%
       milkunize2("data") %>%
-      paste0(res) %>%
+      paste0(resolution) %>%
       list.files(pattern = "tif$", full.names = TRUE) %>%
       head(1) %>%
       raster::raster()
