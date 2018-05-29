@@ -89,7 +89,7 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
   # #extract raster for pseudo-absences (realm in which the species is present)
   # print("Calculating realms")
   species_realms_mask <- raster::mask(realm_raster, temp_file_raster) #select realm code overlaping with range
-  species_realms <- raster::unique(mask2)
+  species_realms <- raster::unique(species_realms_mask)
 
 
   realm_vals <- raster::getValues(realm_raster)
