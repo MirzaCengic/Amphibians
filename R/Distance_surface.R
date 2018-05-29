@@ -57,8 +57,8 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
   raster_mask <- load_mask("Climate", resolution = proc_resolution)
 
   ## Load realm and continent rasters
-  if (!file.exists(output_name))
-  {
+  # if (!file.exists(output_name))
+  # {
     file.remove(output_name)
     file.remove(fs::path_ext_set(output_name, "sdat"))
 
@@ -80,7 +80,7 @@ get_distance_surface <- function(species_range, output_name, processing_resoluti
                         " ", output_name, " ", "-co COMPRESS=LZW")
     system(gdal_call)
 
-  }
+  # }
 
   dist_raster <- raster::raster(output_name)
   #### Mask out continent and realm - Absence points are created within
