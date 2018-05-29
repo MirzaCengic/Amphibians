@@ -4,13 +4,13 @@
 \alias{create_absence_points}
 \title{Create absence points based on distance surface}
 \usage{
-create_absence_points(species_distance_surface, species_range, return = "df",
+create_absence_points(species_range, species_distance_surface, return = "df",
   points_number = 10000)
 }
 \arguments{
-\item{species_distance_surface}{Distance surface. Output of \code{get_distance_surface}.}
-
 \item{species_range}{Species range. Should be of class \code{sf}.}
+
+\item{species_distance_surface}{Distance surface. Output of \code{get_distance_surface}.}
 
 \item{return}{Type of object to return. One of \code{c("df", "sp", "sf")}. Default is "df".}
 

@@ -13,11 +13,19 @@
 #' @param species_range Species range. Should be class \code{sf}.
 #' @param raster_mask Raster mask that provides information for rasterizing the species range.
 #' @param output_name Output name of created SAGA grid.
+#' @param processing_resolution_data csv with species names and processing resolutions.
 #'
 #' @return Raster
 #' @export
 #'
 #' @examples None.
+#' library(Rahat); library(raster); library(tidyverse)
+#'
+#' proc_res <- "Projects/Amphibians/Output/csv/Species_processing_resolution.csv" %>%
+#'  milkunize2() %>%
+#'  read_csv()
+#'
+#'
 #' @importFrom raster raster writeRaster mask getValues setValues
 #' @importFrom Rahat milkunize
 #' @importFrom fasterize fasterize
@@ -164,4 +172,43 @@ if (return == "sf")
   species_absences_pts_sf <- sf::st_as_sf(species_absences_pts)
   return(species_absences_pts_sf)
 }
+}
+
+#' Load realm or continent mask
+#'
+#' @param type Type of data to load. One in c("Realm", "Continent", "Climate")
+#' @param resolution Data resolution. One in c("10m", "5m", "2.5m", "30s")
+#' @param path Folder path. Default is milkunize2("Projects/Amphibians/data_raw/Rasters/Raster")
+#'
+#' @return Raster*
+#' @export
+#'
+#' @examples None
+#' @importFrom raster raster
+#' @importFrom Rahat milkunize2
+#' @importFrom stringr str_subset
+load_mask <- function(type, resolution, path = "Projects/Amphibians/data_raw/Rasters/Raster")
+{
+  stopifnot(type %in% c("Continent", "Realm", "Climate"),
+            resolution %in% c("10m", "5m", "2.5m", "30s"))
+
+  if (type == "Climate")
+  {
+    r <- "WorldClim-1.4/current/" %>%
+      # 10m/wc2.0_bio_10m_01.tif" %>%
+      milkunize2("data") %>%
+      paste0(res) %>%
+      list.files(pattern = "tif$", full.names = TRUE) %>%
+      head(1) %>%
+      raster::raster()
+
+    return(r)
+  } else {
+    r <- path %>%
+      milkunize2() %>%
+      list.files(recursive = TRUE, pattern = "tif$", full.names = TRUE) %>%
+      str_subset(paste0(type, "_", resolution)) %>%
+      raster()
+    return(r)
+  }
 }

@@ -4,7 +4,8 @@
 \alias{get_distance_surface}
 \title{Calculate distance surface}
 \usage{
-get_distance_surface(species_range, raster_mask, output_name)
+get_distance_surface(species_range, raster_mask, output_name,
+  processing_resolution_data)
 }
 \arguments{
 \item{species_range}{Species range. Should be class \code{sf}.}
@@ -12,6 +13,8 @@ get_distance_surface(species_range, raster_mask, output_name)
 \item{raster_mask}{Raster mask that provides information for rasterizing the species range.}
 
 \item{output_name}{Output name of created SAGA grid.}
+
+\item{processing_resolution_data}{csv with species names and processing resolutions.}
 }
 \value{
 Raster
@@ -23,4 +26,11 @@ This function will call SAGA GIS from the terminal, so SAGA has to be installed,
 }
 \examples{
 None.
+library(Rahat); library(raster); library(tidyverse)
+
+proc_res <- "Projects/Amphibians/Output/csv/Species_processing_resolution.csv" \%>\%
+ milkunize2() \%>\%
+ read_csv()
+
+
 }
