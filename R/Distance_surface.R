@@ -11,7 +11,6 @@
 #' This function will call SAGA GIS from the terminal, so SAGA has to be installed, and able to
 #'
 #' @param species_range Species range. Should be class \code{sf}.
-#' @param raster_mask Raster mask that provides information for rasterizing the species range.
 #' @param output_name Output name of created SAGA grid.
 #' @param processing_resolution_data csv with species names and processing resolutions.
 #'
@@ -27,18 +26,20 @@
 #'
 #'
 #' @importFrom raster raster writeRaster mask getValues setValues
-#' @importFrom Rahat milkunize
+#' @importFrom Rahat milkunize2
 #' @importFrom fasterize fasterize
 #' @importFrom fs file_temp path_ext_set file_delete
-get_distance_surface <- function(species_range, raster_mask, output_name, processing_resolution_data)
+#' @importFrom dpylr filter select pull
+#'
+get_distance_surface <- function(species_range, output_name, processing_resolution_data)
 {
   ## Load realm and continent rasters
   if (!file.exists(output_name))
   {
     proc_resolution <- processing_resolution_data %>%
-      filter(species_name == species_range$binomial) %>%
+      dplyr::filter(species_name == species_range$binomial) %>%
       dplyr::select(proc_resolution) %>%
-      pull()
+      dpylr::pull()
 
     ## Load realm and continents raster, to constrain creation to the realms and continents
     ## in which the species is found

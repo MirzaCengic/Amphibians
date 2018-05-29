@@ -4,13 +4,10 @@
 \alias{get_distance_surface}
 \title{Calculate distance surface}
 \usage{
-get_distance_surface(species_range, raster_mask, output_name,
-  processing_resolution_data)
+get_distance_surface(species_range, output_name, processing_resolution_data)
 }
 \arguments{
 \item{species_range}{Species range. Should be class \code{sf}.}
-
-\item{raster_mask}{Raster mask that provides information for rasterizing the species range.}
 
 \item{output_name}{Output name of created SAGA grid.}
 
