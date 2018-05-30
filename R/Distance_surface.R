@@ -1,3 +1,10 @@
+# Functions in this script:
+#########################
+# - get_distance_surface
+# - create_absence_points
+# - load_mask
+# - get_presence_points
+
 # Functions for distance calculation
 
 # Distance calculation
@@ -192,7 +199,7 @@ if (return == "sf")
 #'
 #' @param type Type of data to load. One in c("Realm", "Continent", "Climate")
 #' @param resolution Data resolution. One in c("10m", "5m", "2.5m", "30s")
-#' @param path Folder path. Default is milkunize2("Projects/Amphibians/data_raw/Rasters/Raster")
+#' @param path Folder path. Default is milkunize2("Projects/Amphibians/data_raw/Rasters")
 #'
 #' @return Raster*
 #' @export
@@ -201,7 +208,7 @@ if (return == "sf")
 #' @importFrom raster raster
 #' @importFrom Rahat milkunize2
 #' @importFrom stringr str_subset
-load_mask <- function(type, resolution, path = "Projects/Amphibians/data_raw/Rasters/Raster")
+load_mask <- function(type, resolution, path = "Projects/Amphibians/data_raw/Rasters")
 {
   stopifnot(type %in% c("Continent", "Realm", "Climate"),
             resolution %in% c("10m", "5m", "2.5m", "30s"))
@@ -224,4 +231,53 @@ load_mask <- function(type, resolution, path = "Projects/Amphibians/data_raw/Ras
       raster()
     return(r)
   }
+}
+
+
+#' Get presence points
+#'
+#' Get presence points from species ranges. This function will take species range,
+#' and retrieve processing resolution (resolution at which there are min 30 points),
+#' and create presence points at given resolution. Maximum number of points is 1000.
+#' If there are more than 1000 points, they will be sampled so there is max 1000.
+#'
+#' @param species_range
+#' @param processing_resolution_data
+#'
+#' @return dataframe
+#' @export
+#'
+#'
+#' @examples
+get_presence_points <- function(species_range, processing_resolution_data)
+{
+  # Get the name of species being processed
+  sp_name <- species_range$binomial
+  # Find what is the processing resolution
+  res <- processing_resolution_data %>%
+    dplyr::filter(species_name == sp_name) %>%
+    dplyr::select(proc_resolution) %>%
+    dplyr::pull()
+  # Load climate mask
+  raster_mask <- load_mask(type = "Climate", resolution = res)
+  # Convert to raster
+  range_sp <- fasterize::fasterize(species_range, raster_mask)
+  # Reclassify
+  range_vals <- raster::getValues(range_sp)
+  range_vals[range_vals >= 1] <- 1
+  range_sp <- raster::setValues(range_sp, range_vals)
+  # Extract points
+  occ_pts <- range_sp %>%
+    raster::rasterToPoints() %>%
+    sp::coordinates() %>%
+    as.data.frame() %>%
+    dplyr::rename(PA = layer)
+
+  if (nrow(occ_pts) > 1000)
+  {
+    occ_pts <- occ_pts[sample(nrow(occ_pts), 1000, replace = FALSE), ]
+  }
+
+  return(occ_pts)
+
 }
