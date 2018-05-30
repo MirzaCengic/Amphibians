@@ -241,14 +241,14 @@ load_mask <- function(type, resolution, path = "Projects/Amphibians/data_raw/Ras
 #' and create presence points at given resolution. Maximum number of points is 1000.
 #' If there are more than 1000 points, they will be sampled so there is max 1000.
 #'
-#' @param species_range
-#' @param processing_resolution_data
+#' @param species_range Species range. Should be of class sf.
+#' @param processing_resolution_data Processing resolution csv.
 #'
 #' @return dataframe
 #' @export
 #'
 #'
-#' @examples
+#' @examples None
 get_presence_points <- function(species_range, processing_resolution_data)
 {
   # Get the name of species being processed
